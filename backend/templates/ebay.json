@@ -1,0 +1,10 @@
+{
+  "url": "https://www.ebay.com/sch/i.html?_nkw={{query}}",
+  "selector": ".s-item",
+  "fields": {
+    "name": { "selector": ".s-item__title" },
+    "price": { "selector": ".s-item__price" },
+    "link": { "selector": ".s-item__link", "attribute": "href" },
+    "image": { "selector": ".s-item__image-img", "attribute": "src" }
+  }
+}

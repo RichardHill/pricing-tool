@@ -9,6 +9,8 @@ app.use(cors());
 app.use(bodyParser.json());
 
 // You'll mount route files later here
+const scrapeRoutes = require("./routes/scrape");
+app.use("/scrape", scrapeRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
