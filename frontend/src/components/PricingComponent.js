@@ -14,11 +14,9 @@ function PricingForm() {
 
     // Fetch scraped data on mount
     useEffect(() => {
-      let didCancel = false;
       const fetchData = async () => {
         try {
           const response = await axios.get('http://localhost:3001/scrape/from-template?templatePath=ebay.json&query=toothbrush');
-          console.log('Scraped data received:', response.data);
           const transformed = response.data.results.map(item => ({
               productName: item.name || '',
               competitorPrice: item.price?.replace(/[^0-9.]/g, '') || '',
@@ -28,9 +26,7 @@ function PricingForm() {
               productCategory: ''
             }));
 
-            console.log("This is the transformed ", transformed)
             setScrapedData(transformed);
-            console.log("Transformed scraped data:", transformed);
           
         } catch (error) {
           console.error('Error fetching scraped data:', error);
@@ -38,9 +34,7 @@ function PricingForm() {
       };
 
       fetchData();
-      return () => {
-        didCancel = true;
-      };
+
     }, []);
 
   useEffect(() => {
@@ -63,17 +57,26 @@ function PricingForm() {
     }));
   };
 
+  // Update locally: replace selected product with formData
+  const handleUpdate = (e) => {
+    e.preventDefault();
+    setScrapedData(prev => {
+      const updated = prev.map(item =>
+        item.productName.localeCompare(formData.productName) === 0 ? { ...formData } : item
+      );
+
+      const isNew = !prev.some(item => item.productName.localeCompare(formData.productName) === 0);
+      const newData = isNew ? [...updated, formData] : updated;
+      return newData.sort((a, b) => a.productName.localeCompare(b.productName));
+    });
+  };
+
+  // Submit to server: send scrapedData to /excel/export
   const handleSubmit = (e) => {
     e.preventDefault();
-    setScrapedData(prev => [...prev, formData]);
-    setFormData({
-      productName: '',
-      competitorPrice: '',
-      rating: '',
-      costBase: '',
-      targetMargin: '',
-      productCategory: ''
-    });
+    axios.post('http://localhost:3001/excel/export', scrapedData)
+      .then(() => alert('Data submitted to server for Excel export.'))
+      .catch(err => console.error('Error submitting data:', err));
   };
 
   return (
@@ -93,11 +96,25 @@ function PricingForm() {
               </option>
             ))}
         </select>
-)}
-      <form onSubmit={handleSubmit} style={{ marginBottom: '2rem' }}>
+      )}
+      <form onSubmit={handleUpdate}>
         {Object.keys(formData).map((key) => (
-          <div key={key} style={{ marginBottom: '0.5rem' }}>
-            <label htmlFor={key} style={{ marginRight: '1rem' }}>
+          <div
+            key={key}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              marginBottom: '0.5rem'
+            }}
+          >
+            <label
+              htmlFor={key}
+              style={{
+                width: '160px',
+                marginRight: '1rem',
+                textAlign: 'right'
+              }}
+            >
               {key.charAt(0).toUpperCase() + key.slice(1)}:
             </label>
             <input
@@ -105,11 +122,20 @@ function PricingForm() {
               name={key}
               value={formData[key]}
               onChange={handleChange}
-              required
+              style={{ flex: '1', minWidth: '300px' }}
             />
           </div>
         ))}
-        <button type="submit">Add Record</button>
+        <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginBottom: '2rem' }}>
+          <button type="submit">Update</button>
+          <button type="button" onClick={() => {
+            axios.post('http://localhost:3001/excel/export', scrapedData)
+              .then(() => alert('Data submitted to server for Excel export.'))
+              .catch(err => console.error('Error submitting data:', err));
+          }}>
+            Submit to Server
+          </button>
+        </div>
       </form>
 
       <h2>All Data</h2>
