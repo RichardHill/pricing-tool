@@ -12,6 +12,9 @@ app.use(bodyParser.json());
 const scrapeRoutes = require("./routes/scrape");
 app.use("/scrape", scrapeRoutes);
 
+const spreadsheetRoutes = require("./routes/spreadsheet");
+app.use("/excel", spreadsheetRoutes);
+
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
