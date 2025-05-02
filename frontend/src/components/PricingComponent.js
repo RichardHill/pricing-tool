@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import LoadingOverlay from './LoadingOverlay';
 
 function PricingForm() {
   const [scrapedData, setScrapedData] = useState([]);
@@ -77,19 +78,19 @@ function PricingForm() {
       const newData = isNew ? [...updated, formData] : updated;
       return newData.sort((a, b) => a.productName.localeCompare(b.productName));
     });
-    setIsDirty(false);
   };
 
   const handleExportToExcel = async () => {
     try {
+      setLoading(true);
       const response = await axios.post('http://localhost:3001/excel/export', { data: scrapedData });
-      alert('Data submitted to server for Excel export.');
-      console.log('Excel export response:', response.data);
       setScrapedData(response.data.data); // Update UI with enriched data
       setSubmitted(true);
     } catch (err) {
       console.error('Error submitting data:', err);
       alert('Failed to export data to Excel.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -100,88 +101,94 @@ function PricingForm() {
   };
 
   return (
-    <div style={{ padding: '1rem' }}>
-      <h2>New Product Entry</h2>
-      <label htmlFor="productSelect" style={{ marginRight: '1rem' }}>Select Product:</label>
-      {scrapedData.length === 0 ? (
-        <p>Loading options...</p>
-      ) : (
-        <select id="productSelect" onChange={handleSelectChange}>
-          <option value="">-- Choose a product --</option>
-          {scrapedData
-            .filter(item => item.productName && item.productName.trim() !== '')
-            .map((item, index) => (
-              <option key={`${item.productName}-${index}`} value={item.productName}>
-                {item.productName}
-              </option>
-            ))}
-        </select>
-      )}
-      <form onSubmit={handleUpdate}>
-        {Object.keys(formData).map((key) => (
-          <div
-            key={key}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              marginBottom: '0.5rem'
-            }}
-          >
-            <label
-              htmlFor={key}
+    <>
+      {loading && <LoadingOverlay />}
+      <div style={{ padding: '1rem' }}>
+        <h2>New Product Entry</h2>
+        <label htmlFor="productSelect" style={{ marginRight: '1rem' }}>Select Product:</label>
+        {scrapedData.length === 0 ? (
+          <p>Loading options...</p>
+        ) : (
+          <select id="productSelect" onChange={handleSelectChange}>
+            <option value="">-- Choose a product --</option>
+            {scrapedData
+              .filter(item => item.productName && item.productName.trim() !== '')
+              .map((item, index) => (
+                <option key={`${item.productName}-${index}`} value={item.productName}>
+                  {item.productName}
+                </option>
+              ))}
+          </select>
+        )}
+        <form onSubmit={handleUpdate}>
+          {Object.keys(formData).map((key) => (
+            <div
+              key={key}
               style={{
-                width: '160px',
-                marginRight: '1rem',
-                textAlign: 'right'
+                display: 'flex',
+                alignItems: 'center',
+                marginBottom: '0.5rem'
               }}
             >
-              {key.charAt(0).toUpperCase() + key.slice(1)}:
-            </label>
-            <input
-              type="text"
-              name={key}
-              value={formData[key]}
-              onChange={handleChange}
-              style={{ flex: '1', minWidth: '300px' }}
-            />
+              <label
+                htmlFor={key}
+                style={{
+                  width: '160px',
+                  marginRight: '1rem',
+                  textAlign: 'right'
+                }}
+              >
+                {key.charAt(0).toUpperCase() + key.slice(1)}:
+              </label>
+              <input
+                type="text"
+                name={key}
+                value={formData[key]}
+                onChange={handleChange}
+                style={{ flex: '1', minWidth: '300px' }}
+              />
+            </div>
+          ))}
+          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginBottom: '2rem' }}>
+            <button type="submit" disabled={loading || !isDirty}>Update</button>
+            <button type="button" disabled={loading || !isDirty} onClick={async () => {
+              await handleSubmit()
+            }}>
+              Submit to Server
+            </button>
+            <button
+              type="button"
+              disabled={!submitted}
+              onClick={async () => {
+                try {
+                  setLoading(true);
+                  const response = await axios.post('http://localhost:3001/summary', { data: scrapedData });
+                  setSummaryText(response.data.summary);
+                } catch (err) {
+                  console.error('Error generating summary:', err);
+                  alert('Failed to generate summary.');
+                } finally {
+                  setLoading(false);
+                }
+              }}
+            >
+              Generate Summary
+            </button>
           </div>
-        ))}
-        <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginBottom: '2rem' }}>
-          <button type="submit" disabled={loading || !isDirty}>Update</button>
-          <button type="button" disabled={loading || !isDirty} onClick={async () => {
-            await handleSubmit()
-          }}>
-            Submit to Server
-          </button>
-          <button
-            type="button"
-            disabled={!submitted}
-            onClick={async () => {
-              try {
-                const response = await axios.post('http://localhost:3001/summary', { data: scrapedData });
-                setSummaryText(response.data.summary);
-              } catch (err) {
-                console.error('Error generating summary:', err);
-                alert('Failed to generate summary.');
-              }
-            }}
-          >
-            Generate Summary
-          </button>
-        </div>
-      </form>
+        </form>
 
-      <div style={{ padding: '1rem' }}>
-        <label htmlFor="summary">CFO Summary:</label>
-        <textarea
-          id="summary"
-          value={summaryText}
-          readOnly
-          rows={6}
-          style={{ width: '100%', marginTop: '0.5rem' }}
-        />
+        <div style={{ padding: '1rem' }}>
+          <label htmlFor="summary">CFO Summary:</label>
+          <textarea
+            id="summary"
+            value={summaryText}
+            readOnly
+            rows={6}
+            style={{ width: '100%', marginTop: '0.5rem' }}
+          />
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 
