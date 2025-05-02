@@ -39,6 +39,8 @@ async function scraper(templateFileName, query, outputPath = "output/results.jso
     await fs.mkdir(outputDir, { recursive: true });
     await fs.writeFile(outputPath, JSON.stringify(results, null, 2));
 
+    console.log(`📄 Returning Results: ${JSON.stringify(results)}`);
+
     return results;
   } catch (err) {
     console.error("❌ loadAndRunScraper error:", err.message);
