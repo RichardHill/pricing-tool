@@ -71,12 +71,22 @@ function PricingForm() {
     });
   };
 
+  const handleExportToExcel = async () => {
+    try {
+      const response = await axios.post('http://localhost:3001/excel/export', { data: scrapedData });
+      alert('Data submitted to server for Excel export.');
+      console.log('Excel export response:', response.data);
+      setScrapedData(response.data.data); // Update UI with enriched data
+    } catch (err) {
+      console.error('Error submitting data:', err);
+      alert('Failed to export data to Excel.');
+    }
+  };
+
   // Submit to server: send scrapedData to /excel/export
   const handleSubmit = (e) => {
-    e.preventDefault();
-    axios.post('http://localhost:3001/excel/export', scrapedData)
-      .then(() => alert('Data submitted to server for Excel export.'))
-      .catch(err => console.error('Error submitting data:', err));
+
+    handleExportToExcel()
   };
 
   return (
@@ -128,10 +138,8 @@ function PricingForm() {
         ))}
         <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginBottom: '2rem' }}>
           <button type="submit">Update</button>
-          <button type="button" onClick={() => {
-            axios.post('http://localhost:3001/excel/export', scrapedData)
-              .then(() => alert('Data submitted to server for Excel export.'))
-              .catch(err => console.error('Error submitting data:', err));
+          <button type="button" onClick={async () => {
+            await handleSubmit()
           }}>
             Submit to Server
           </button>
