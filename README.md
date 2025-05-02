@@ -9,35 +9,71 @@ A locally hosted application for a mid-sized consumer goods company that automat
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/pricing-tool.git
+git clone https://github.com/richardhill/pricing-tool.git
 cd pricing-tool
 ```
 
-### 2. Backend Setup
+### 2. Install Dependencies
+
+Install backend dependencies:
 
 ```bash
 cd backend
 npm install
-cp .env.example .env   # Add your OpenAI API key here
-node index.js
 ```
 
-### 3. Frontend Setup
+Install frontend dependencies:
 
 ```bash
 cd ../frontend
 npm install
+```
+
+### 3. Configure Environment Variables
+
+Copy the example `.env` file and provide your OpenAI API key:
+
+```bash
+cd ../backend
+cp .env.example .env
+# Edit .env and set OPENAI_API_KEY=your_key_here
+```
+
+### 4. Run the App
+
+In one terminal, run the backend:
+
+```bash
+cd backend
+node index.js
+```
+
+In another terminal, run the frontend:
+
+```bash
+cd frontend
 npm start
 ```
 
-### 4. Usage
+This will open the app in your browser at `http://localhost:3000`.
 
-- On first load, the app will scrape product data (from eBay by default).
-- You can update product fields locally.
-- Click **Update** to stage your changes.
-- Click **Submit to Server** to save and compute pricing data in an Excel file.
-- Click **Generate Summary** to get a CFO-style summary using OpenAI.
+---
 
+## 🤖 LLM Integration
+
+This project uses a **live OpenAI LLM API** via the `openai` npm package to generate CFO summaries based on updated pricing data.
+
+---
+
+## 🛠️ Technologies Used
+
+- **Frontend:** React, Axios, CSS Modules
+- **Backend:** Node.js, Express
+- **Scraping:** scrape-it-forward
+- **Spreadsheet Integration:** exceljs
+- **LLM Integration:** OpenAI API
+
+---
 
 ## 📦 Features
 
@@ -71,17 +107,6 @@ npm start
 - Live loading spinner overlay for all async operations.
 - Field-level form controls and aligned inputs.
 - Buttons conditionally enabled based on app state.
-
----
-
-## 🛠️ Technologies Used
-
-- **Frontend:** React, Axios, CSS Modules
-- **Backend:** Node.js, Express
-- **Scraping:** [scrape-it-forward](https://www.npmjs.com/package/scrape-it-forward)
-- **Spreadsheet:** `exceljs`
-- **LLM API:** OpenAI (via `openai` npm package)
-- **Styling:** Custom CSS
 
 ---
 
