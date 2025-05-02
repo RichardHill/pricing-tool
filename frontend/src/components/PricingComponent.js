@@ -11,11 +11,16 @@ function PricingForm() {
     targetMargin: '',
     productCategory: ''
   });
+  const [summaryText, setSummaryText] = useState('');
+  const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [isDirty, setIsDirty] = useState(false);
 
     // Fetch scraped data on mount
     useEffect(() => {
       const fetchData = async () => {
         try {
+          setLoading(true);
           const response = await axios.get('http://localhost:3001/scrape/from-template?templatePath=ebay.json&query=toothbrush');
           const transformed = response.data.results.map(item => ({
               productName: item.name || '',
@@ -30,6 +35,8 @@ function PricingForm() {
           
         } catch (error) {
           console.error('Error fetching scraped data:', error);
+        } finally {
+          setLoading(false);
         }
       };
 
@@ -51,10 +58,11 @@ function PricingForm() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData(prev => {
+      const newData = { ...prev, [name]: value };
+      setIsDirty(true);
+      return newData;
+    });
   };
 
   // Update locally: replace selected product with formData
@@ -69,6 +77,7 @@ function PricingForm() {
       const newData = isNew ? [...updated, formData] : updated;
       return newData.sort((a, b) => a.productName.localeCompare(b.productName));
     });
+    setIsDirty(false);
   };
 
   const handleExportToExcel = async () => {
@@ -77,6 +86,7 @@ function PricingForm() {
       alert('Data submitted to server for Excel export.');
       console.log('Excel export response:', response.data);
       setScrapedData(response.data.data); // Update UI with enriched data
+      setSubmitted(true);
     } catch (err) {
       console.error('Error submitting data:', err);
       alert('Failed to export data to Excel.');
@@ -137,40 +147,40 @@ function PricingForm() {
           </div>
         ))}
         <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginBottom: '2rem' }}>
-          <button type="submit">Update</button>
-          <button type="button" onClick={async () => {
+          <button type="submit" disabled={loading || !isDirty}>Update</button>
+          <button type="button" disabled={loading || !isDirty} onClick={async () => {
             await handleSubmit()
           }}>
             Submit to Server
           </button>
+          <button
+            type="button"
+            disabled={!submitted}
+            onClick={async () => {
+              try {
+                const response = await axios.post('http://localhost:3001/summary', { data: scrapedData });
+                setSummaryText(response.data.summary);
+              } catch (err) {
+                console.error('Error generating summary:', err);
+                alert('Failed to generate summary.');
+              }
+            }}
+          >
+            Generate Summary
+          </button>
         </div>
       </form>
 
-      <h2>All Data</h2>
-      <table border="1" cellPadding="6">
-        <thead>
-          <tr>
-            <th>Product Name</th>
-            <th>Competitor Price</th>
-            <th>Rating</th>
-            <th>Cost Base</th>
-            <th>Target Margin</th>
-            <th>Product Category</th>
-          </tr>
-        </thead>
-        <tbody>
-        {Array.isArray(scrapedData) && scrapedData.map((item) => (
-            <tr key={`${item.productName}-${item.competitorPrice}`}>             
-              <td>{item.productName}</td>
-              <td>{item.competitorPrice}</td>
-              <td>{item.rating}</td>
-              <td>{item.costBase}</td>
-              <td>{item.targetMargin}</td>
-              <td>{item.productCategory}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <div style={{ padding: '1rem' }}>
+        <label htmlFor="summary">CFO Summary:</label>
+        <textarea
+          id="summary"
+          value={summaryText}
+          readOnly
+          rows={6}
+          style={{ width: '100%', marginTop: '0.5rem' }}
+        />
+      </div>
     </div>
   );
 }
