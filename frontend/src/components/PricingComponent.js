@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import LoadingOverlay from './LoadingOverlay';
+import './PricingComponent.css';
 
 function PricingForm() {
   const [scrapedData, setScrapedData] = useState([]);
@@ -103,8 +104,9 @@ function PricingForm() {
   return (
     <>
       {loading && <LoadingOverlay />}
-      <div style={{ padding: '1rem' }}>
-        <h2>New Product Entry</h2>
+      <div className="pricing-form-container">
+        <h2>Competitor Analysis</h2>
+        <div className="form-group">
         <label htmlFor="productSelect" style={{ marginRight: '1rem' }}>Select Product:</label>
         {scrapedData.length === 0 ? (
           <p>Loading options...</p>
@@ -120,23 +122,15 @@ function PricingForm() {
               ))}
           </select>
         )}
+        </div>
         <form onSubmit={handleUpdate}>
           {Object.keys(formData).map((key) => (
             <div
               key={key}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                marginBottom: '0.5rem'
-              }}
+              className="form-group"
             >
               <label
                 htmlFor={key}
-                style={{
-                  width: '160px',
-                  marginRight: '1rem',
-                  textAlign: 'right'
-                }}
               >
                 {key.charAt(0).toUpperCase() + key.slice(1)}:
               </label>
@@ -145,11 +139,10 @@ function PricingForm() {
                 name={key}
                 value={formData[key]}
                 onChange={handleChange}
-                style={{ flex: '1', minWidth: '300px' }}
               />
             </div>
           ))}
-          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginBottom: '2rem' }}>
+          <div className="form-buttons">
             <button type="submit" disabled={loading || !isDirty}>Update</button>
             <button type="button" disabled={loading || !isDirty} onClick={async () => {
               await handleSubmit()
@@ -184,7 +177,6 @@ function PricingForm() {
             value={summaryText}
             readOnly
             rows={6}
-            style={{ width: '100%', marginTop: '0.5rem' }}
           />
         </div>
       </div>

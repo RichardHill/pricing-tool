@@ -1,0 +1,76 @@
+.pricing-form-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 1.5rem;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    font-family: Arial, sans-serif;
+  }
+  
+  label {
+    font-weight: bold;
+    margin-bottom: 0.25rem;
+  }
+  
+  input[type="text"],
+  select,
+  textarea {
+    width: 100%;
+    min-width: 200px;
+    padding: 0.5rem;
+    margin-bottom: 1rem;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+    font-size: 1rem;
+  }
+  
+  textarea {
+    resize: vertical;
+  }
+  
+  .form-group {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+
+  .form-group label {
+    font-weight: bold;
+    width: 180px;
+    margin-right: 1rem;
+    text-align: right;
+  }
+
+  .form-group input[type="text"],
+  .form-group select,
+  .form-group textarea {
+    flex: 1;
+  }
+  
+  .form-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+  
+  button {
+    padding: 0.6rem 1.2rem;
+    font-size: 1rem;
+    border-radius: 6px;
+    border: none;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  
+  button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+  
+  button:not(:disabled):hover {
+    background-color: #0056b3;
+  }
